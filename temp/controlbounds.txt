@@ -1,0 +1,8 @@
+fanTemperatureOnOff 20
+temperatureWarning 40
+temperatureShutdown 50
+stageTimeLimit 10000
+currentLimit 4000
+Kp 0.1
+Ki 1.0E-4
+Kd 0.025
