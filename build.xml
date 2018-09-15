@@ -1,0 +1,210 @@
+<?xml version="1.0"?>
+<!DOCTYPE project>
+
+<project xmlns:cpptasks="antlib:org.sf.net.antcontrib.cpptasks" name="Degasser" default="run" basedir=".">
+
+	<!-- ================================================================ -->
+	<!-- Properties          											  -->
+	<!-- ================================================================ -->
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="lib.dir" value="./lib" />
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="log.dir" value="${basedir}/logs" />
+	<property name="releaseinfo.dir" value="${basedir}/src/degasser" />
+	<property name="jar" value="jar" />
+	<property name="run" value="run" />
+	<property name="main-class" value="degasser.Degasser" />
+	<property name="packagename" value="degasser" />
+	<property name="project" value="Degasser Control Interface" />
+	<property name="version" value="1.0" />
+	<property name="company" value="University of California, Santa Cruz" />
+	<property name="tstamp_build" value="time to go" />
+	<property name="web" value="http://es.ucsc.edu/~emorris" />
+	<property name="mail" value="brecky.morris@ucsc.edu" />
+	<property name="copyright" value="2018, Brecky Morris and The University of California, Santa Cruz" />
+	<property name="javadoc.dir" value="${basedir}/docs" />
+	<property name="debug" value="on" />
+	<property name="jarname" value="Degasser.jar" />
+	<property name="username" value="pi" />
+	<property name="password" value="dega$$$$er" />
+	<property name="remote_host" value="128.114.69.109"/>
+	<property name="remote_dir" value="/home/pi/Documents/degasser" />
+
+	<!-- ================================================================ -->
+	<!-- Convert list so library jars gets added to the manifest          -->
+	<!-- ================================================================ -->
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<property name="cp" refid="classpath" />
+
+	<path id="library.Project">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="sources">
+		<fileset dir="${src.dir}">
+			<include name="*java" />
+			<exclude name="*.class" />
+		</fileset>
+	</path>
+	
+	<path id="class.files">
+			<fileset dir="${build.dir}">
+				<include name="*.class"/>
+			</fileset>
+		</path>
+
+		<!-- convert the libraries to be included in the 
+		  Class-Path attribute of the MANIFEST.MF file -->
+		<pathconvert property="lib.project.manifest.classpath"
+		             pathsep=" ">
+			<path refid="library.Project"/>
+			<chainedmapper>
+				<flattenmapper/>
+				<globmapper from="*" to="${lib.dir}/*"/>
+			</chainedmapper>
+		</pathconvert>
+
+	<!-- ================================================================ -->
+	<!-- Init                                                             -->
+	<!-- ================================================================ -->
+	<target name="init">
+		<echo message="base directory is ${basedir}" />
+		<echo message="source directory is ${src.dir}" />
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- JReleaseInfo                                                     -->
+	<!-- ================================================================ -->
+	<target name="update_jreleaseinfo" depends="init">
+		<echo message="creating JReleaseInfo File in ${releaseinfo.dir}" />
+		<taskdef name="jreleaseinfo" classname="ch.oscg.jreleaseinfo.anttask.JReleaseInfoAntTask" classpath="${lib.dir}/jreleaseinfo-1.3.0.jar" />
+
+		<jreleaseinfo className="MyReleaseInfo" packageName="${packagename}" targetDir="${src.dir}" project="${project}" version="${version}" withViewer="false" buildNumFile="${basedir}/buildnum.properties" buildNumProperty="buildnum">
+			<parameter name="company" value="${company}" />
+			<parameter name="buildTimeStamp" value="${tstamp_build}" />
+			<parameter name="home" value="${web}" />
+			<parameter name="mail" value="${mail}" />
+			<parameter name="copyright" value="${copyright}" />
+		</jreleaseinfo>
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Compile                                                          -->
+	<!-- ================================================================ -->
+	<target name="compile" depends="init, update_jreleaseinfo">
+		<echo message="Classpath is ${cp}" />
+		<javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="classpath" debug="${debug}" debuglevel="lines,vars,source" includeantruntime="false">
+		</javac>
+
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Run Unit Tests                                                   -->
+	<!-- ================================================================ -->
+	<path id="classpath.test">
+		<pathelement location="${build.dir}" />
+		<pathelement path="${cp}" />
+	</path>
+
+	<target name="test" depends="compile">
+		<echo message="${basedir}/${lib.dir}" />
+		<junit printsummary="withOutAndErr" haltonfailure="yes" fork="yes">
+			<classpath refid="classpath.test" />
+			<formatter type="plain" />
+			<test name="probe.ParseTest" />
+		</junit>
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Jar                                                              -->
+	<!-- ================================================================ -->
+	<target name="jar" depends="compile">
+		<echo message="creating the jar file" />
+		<mkdir dir="${dist.dir}" />
+		<jar destfile="${dist.dir}/${jarname}" basedir="${build.dir}">
+			<zipfileset dir="${lib.dir}" prefix="./lib" />
+			<zipfileset dir="${src.dir}" prefix="./src" />
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}" />
+				<attribute name="Class-Path" value="${lib.project.manifest.classpath}" />
+			</manifest>
+		</jar>
+		<copy file="${dist.dir}/${jarname}" todir="${basedir}" />
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Javadoc                                                          -->
+	<!-- ================================================================ -->
+	<target name="javadoc" depends="jar">
+		<echo message="generating source documentation" />
+		<mkdir dir="${javadoc.dir}" />
+		<javadoc sourcepath="${src.dir}" packagenames="degasser*" 
+			destdir="${javadoc.dir}" classpathref="classpath">
+		</javadoc>
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Clean                                                            -->
+	<!-- ================================================================ -->
+	<target name="clean">
+		<echo message="emptying build directory" />
+		<delete verbose="true" includeemptydirs="true">
+			<fileset dir="build" includes="**/*" />
+		</delete>
+		<echo message="deleting dist dir: ${dist.dir}" />
+		<delete dir="${dist.dir}" />
+		<echo message="deleting log files: ${log.dir}" />
+		<delete>
+			<fileset dir="${log.dir}">
+				<include name="*.txt" />
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="combine" depends="javadoc, clean">
+		<exec executable="${basedir}/combine.sh">
+		</exec>
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Run                                                              -->
+	<!-- ================================================================ -->
+	<target name="run" depends="combine">
+		<echo message="manifest Class-Path is ${lib.project.manifest.classpath}" />
+		<java jar="${jarname}" fork="true">
+			<jvmarg value="-Xmx256m" />
+		</java>
+	</target>
+	
+	<!-- ================================================================ -->
+	<!-- prepareRemote                                                    -->
+	<!-- Use command line arguments -Dusername=me -Dpassword=mypassword   -->
+	<!-- ================================================================ -->
+	<target name="prepareRemote" depends="jar, javadoc, clean">
+		<echo message="trying to prepare directory on remote host" />
+		<sshexec host="${remote_host}" verbose="true" username="${username}" trust="true" password="${password}" 
+			command="ls ${remote_dir}" />
+	</target>
+
+	<!-- ================================================================ -->
+	<!-- Deploy GUI                                                       -->
+	<!-- Use command line arguments -Dusername=me -Dpassword=mypassword   -->
+	<!-- ================================================================ -->
+	<target name="deploy" depends="combine">
+		<echo message="file is ${basedir}/${jarfile}" />
+		<echo message="remote is ${username}:${password}@${remote_host}:${remote_dir}" />
+		<scp file="${basedir}/*" todir="${username}:${password}@${remote_host}:${remote_dir}" verbose="true"
+			trust="true">
+			</scp>
+	</target>
+	
+</project>

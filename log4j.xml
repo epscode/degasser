@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+     <!-- A Size-based log file that rolls over to a new file after 5000KB and keeps 
+			at most 5 log files -->
+	<appender name="FILE" class="org.apache.log4j.rolling.RollingFileAppender">
+		<rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy" >
+			<param name="activeFileName" value="./logs/debug_log.txt" />
+			<param name="fileNamePattern" value="./logs/debug_log.%i.txt" />
+			<param name="minIndex" value="1" />
+			<param name="maxIndex" value="10" />
+		</rollingPolicy>
+		<triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+			<param name="maxFileSize" value="500000" />
+		</triggeringPolicy>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" 
+
+				value="[%d{yyyy-MM-dd HH:mm:ss}]: %5p %c{1}:%l - %m%n" />
+		</layout>
+	</appender> 
+	
+	<root>
+		<level value="DEBUG"  />
+		<appender-ref ref="FILE"/>
+	</root>
+
+</log4j:configuration>
+

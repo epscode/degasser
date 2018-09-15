@@ -1,0 +1,45 @@
+port opened
+
+us
+setBoundsValues#20,40,50,53,540,1.0E-5,0.1,1.0E-4,0.025
+resetState
+command received: 
+
+command received: 
+
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
+s
+tatus
