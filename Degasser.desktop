@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=Degasser
+Comment=Degasser Program Launcher
+Exec=/home/pi/Documents/degasser/degasser.sh
+StartupNotify=true
+Terminal=false
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Icon=/home/pi/Documents/degasser/pump.jpg
